@@ -1,6 +1,7 @@
 #! -*- coding: utf-8 -*-
-import md5
-
+import hashlib
+from utils import ip2int, int2ip
+   
 class Nodo:
     def __init__(self, nip=None, nid=None,bip=None):
         self.bip = bip
@@ -13,8 +14,12 @@ class Nodo:
             self.ip = nip
 
         if not nid:
-            # gerando chave md5 a parte do ip do nodo )
-            self.nid = str(md5.new(self.ip).hexdigest()[:4]) 
+            # gerando chave md5 atráves do ip do nodo 
+            # 1º converte para int o md5 gerado
+            # 2º converte para string o numero POSITIVO gerado
+            # 3º pega os primeiros 4 caracteres do numero gerado em string e converte para inteiro
+            # esses passos garantem um identificador numerico posivito
+            self.nid = int(str(int(hashlib.md5(self.ip).hexdigest(),16))[:4]) 
             self.ip = nip
         else:
             self.nid = nid
@@ -39,20 +44,17 @@ class Nodo:
         self.sucessor = None
         self.esta_na_rede = False
 
-    def getBytesIP(self):
+   
+    def getBytesIP(self): 
+        """ retorna o ip como inteiro nao-negativo de 4 bytes """
         if  not self.bip:
-            bip = ""
-            for casa in self.ip.split('.'):
-                bip+= chr(int(casa))
+            bip = ip2int(self.ip)
             self.bip = bip
         return self.bip
 
     def setBytesIP(self,bip):
         self.bip = bip
-        casas = []
-        for c in bip:
-            casas.append(str(ord(c)))
-        self.ip = ".".join(casas)
+        self.ip = int2ip(self.bip)
 
     def info(self):
             info = " ID = %s\n IP = %s\n" % (self.nid,self.ip)
