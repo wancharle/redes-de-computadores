@@ -1,6 +1,6 @@
 #! -*- coding: utf-8 -*-
 
-import socket
+import socket, struct, binascii
 from nodo import Nodo
 class Message:
     CODIGO = 'M'
@@ -8,18 +8,17 @@ class Message:
     
     def __init__(self,node, message=None):
         self.node = node
-        self.message = message
+        self.message = ['s',message]
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP  
        
-    def envia(self,UDP_IP): 
-
-        data = self.CODIGO + self.message
-        print "mensagem enviada (%s): ||%s||" % (UDP_IP, data)        
+    def envia(self,UDP_IP):  
+        data = struct.pack("!B"+self.message[0],int(self.CODIGO), *self.message[1:])
+        print "mensagem enviada (%s): ||%s||" % (UDP_IP, binascii.hexlify(data))        
         self.sock.sendto(data, (UDP_IP, self.UDP_PORT)) 
 
     def envia_resposta(self,UDP_IP):
-        data = self.CODIGO_RESPOSTA + self.message
-        print "resposta enviada (%s): ||%s||" % (UDP_IP, data)       
+        data = struct.pack("!B"+self.message[0],int(self.CODIGO_RESPOSTA), *self.message[1:])
+        print "resposta enviada (%s): ||%s||" % (UDP_IP, binascii.hexlify(data))       
         self.sock.sendto(data, (UDP_IP, self.UDP_PORT)) 
 
     def recebe(self,datagram):
@@ -169,8 +168,8 @@ class Update(Message):
         
 
 class Leave(Message):
-    CODIGO = chr(1) # leave codigo = 1
-    CODIGO_RESPOSTA = chr(65)
+    CODIGO = int(1) # leave codigo = 1
+    CODIGO_RESPOSTA = int(65)
 
     LEAVES = []
 
@@ -180,25 +179,30 @@ class Leave(Message):
             print "ATENÇÂO: este nó ainda não pertence a uma rede!"
             return
         node = self.node
-        message = node.nid 
-        message += node.sucessor.nid + node.sucessor.getBytesIP()
-        message += node.antecessor.nid + node.antecessor.getBytesIP()
-        self.message = message 
+        
+        self.message = ["IIIII",]
+        self.message += [node.nid,  node.sucessor.nid, node.sucessor.getBytesIP()]
+        self.message += [node.antecessor.nid,  node.antecessor.getBytesIP()]
+        
+
         # salva nids para esperar resposta
         self.LEAVES.append(node.sucessor.nid)
         self.LEAVES.append(node.antecessor.nid)
 
         # envia mensagem de leave
+
+        print "\n---> '%s' enviou leave!" % node.nid
         Message.envia(self, self.node.sucessor.ip) 
         Message.envia(self, self.node.antecessor.ip)
 
     def responde(self, remetente, data):
         # desempacota os dados
-        nid_saindo = data[1:5] 
-        nid_sucessor = data[5:9]
-        bip_sucessor = data[9:13]
-        nid_antecessor = data[13:17]
-        bip_antecessor = data[17:21]
+        dados = struct.unpack("!BIIIII",data)
+        nid_saindo = dados[1] 
+        nid_sucessor = dados[2]
+        bip_sucessor = dados[3]
+        nid_antecessor = dados[4]
+        bip_antecessor = dados[5]
 
         # rebalancea os nos
         if self.node.sucessor.nid == nid_saindo:
@@ -207,16 +211,18 @@ class Leave(Message):
         if self.node.antecessor.nid == nid_saindo:
             antecessor = Nodo(nid=nid_antecessor, bip=bip_antecessor)
             self.node.antecessor = antecessor
-        print "LEAVE respondido: %s saiu!" % nid_saindo
+        print "\n---> '%s' respondeu LEAVE para %s!" % (self.node.nid,nid_saindo)
         # envia resposta
-        self.message = self.node.nid # no origem
+        self.message = ["I",self.node.nid,] 
         self.envia_resposta(remetente) # codigo resposta + nid origem
 
     def recebe_resposta(self,data):  
         """
         recebe resposta dos visinhos que terminaram o balanceameno
         """
-        Leave.LEAVES.remove(data[1:])        
+        codigo, nid = struct.unpack('!BI',data)
+        print "\n'%s' recebeu resposta LEAVE de '%s'" %(self.node.nid,nid)  
+        Leave.LEAVES.remove(nid)        
         return len(Leave.LEAVES)==0 
         
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4:

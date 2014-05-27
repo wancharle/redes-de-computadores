@@ -1,16 +1,15 @@
 #! -*- coding: utf-8 -*-
-import sys,os
+import os
 import socket
-from nodo import Nodo
-from threading import  Thread
-import time
-from utils import pega_todos_os_ips
-from messages import Message, Texto, Leave, Lookup, Update, Join 
+from threading import Thread
+import time,struct
 
+from nodo import Nodo
+from utils import pega_todos_os_ips
+from messages import Texto, Leave, Lookup, Update, Join
 
 
 global nodo
-
 
 class Server:
     PORTA = 12345
@@ -23,9 +22,9 @@ class Server:
         data = ""
         while 1 :
             data, addr = s.recvfrom(1024)
-            print  "||%s||" % data
+            print  "\nSERVER '%s' RECEBEU:  ||%s||" % (nodo.nid,data)
             ip_remetente = addr[0]
-            codigo = data[0]
+            codigo = struct.unpack("!B",data[0])[0]
             if codigo ==Texto.CODIGO:
                 texto =  Texto.recebe(data)
                 print "mensagem recebida:'%s'" % texto
