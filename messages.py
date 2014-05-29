@@ -32,17 +32,19 @@ class Texto(Message):
         return datagram[1:]
 
 class Lookup(Message):
-    CODIGO = chr(2)
-    CODIGO_RESPOSTA = chr(66)
+    CODIGO = int(2)
+    CODIGO_RESPOSTA = int(66)
 
     def envia(self,node_origem, nid_procurado, ip_destino):
-        self.message = node_origem.nid + node_origem.getBytesIP() + nid_procurado
+        
+        self.message =["III", node_origem.nid , node_origem.getBytesIP() , nid_procurado ]
         Message.envia(self, ip_destino)       
     
-    def responde(self, remetente, data):
-        nid_origem = data[1:5]
-        bip_origem = data[5:9]
-        nid_procurado = data[9:13]
+    def responde(self, remetente, dados):
+        data = struct.unpack('!BIII',dados)
+        nid_origem = data[1]
+        bip_origem = data[2]
+        nid_procurado = data[3]
         
         node_origem = Nodo(bip=bip_origem, nid=nid_origem) 
  
@@ -84,15 +86,16 @@ class Lookup(Message):
 
         
         # responde para node_origem apenas
-        self.message = nid_procurado + sucessor.nid + sucessor.getBytesIP()
+        self.message = ['III', nid_procurado, sucessor.nid, sucessor.getBytesIP()]
         self.envia_resposta(node_origem.ip)           
         print "LOOKUP respondido para %s (%s):\n--- sucessor = %s (%s)" % (node_origem.nid, node_origem.ip, sucessor.nid, sucessor.ip)
         return
     
-    def recebe_resposta(self,data):
-        nid_procurado = data[1:5]
-        nid_sucessor = data[5:9]
-        bip_sucessor = data[9:13]
+    def recebe_resposta(self,dados):
+        data = struct.unpack("!BIII",dados)
+        nid_procurado = data[1]
+        nid_sucessor = data[2]
+        bip_sucessor = data[3]
         sucessor = Nodo(bip=bip_sucessor,nid=nid_sucessor)
         if self.node.esta_na_rede:
             # apenas imprime a resposta
@@ -108,16 +111,16 @@ class Lookup(Message):
 
 
 class Join(Message):
-    CODIGO = chr(0)
-    CODIGO_RESPOSTA = chr(64)
+    CODIGO = int(0)
+    CODIGO_RESPOSTA = int(64)
 
     def envia(self,ip_destino):
-        self.message = self.node.nid
+        self.message = ["I",self.node.nid]
         Message.envia(self, ip_destino)
 
     def responde(self, remetente, data):
         ip_antecessor = remetente
-        nid_antecessor = data[1:5]
+        cod, nid_antecessor = struct.unpack('!BI',data)
         
         # atualizando antecessor do nó sucessor
         novo_antecessor = self.node.antecessor        
@@ -125,15 +128,18 @@ class Join(Message):
         
         # respondendo o join
         novo_sucessor = self.node
-        self.message = novo_sucessor.nid + novo_sucessor.getBytesIP() + novo_antecessor.nid + novo_antecessor.getBytesIP()
+        self.message = ['IIII']
+        self.message += [novo_sucessor.nid,  novo_sucessor.getBytesIP()]
+        self.message += [novo_antecessor.nid, novo_antecessor.getBytesIP()]
         self.envia_resposta(remetente)
         print "JOIN respondido:\n --- %s foi adicionado a rede como antecessor de %s!" % (nid_antecessor, self.node.nid) 
 
-    def recebe_resposta(self,data):
-        nid_sucessor = data[1:5]
-        bip_sucessor = data[5:9]
-        nid_antecessor = data[9:13]
-        bip_antecessor = data[13:17]
+    def recebe_resposta(self,dados):
+        data = struct.unpack('!BIIII',dados)
+        nid_sucessor = data[1]
+        bip_sucessor = data[2]
+        nid_antecessor = data[3]
+        bip_antecessor = data[4]
        
         # entrando na rede          
         self.node.antecessor = Nodo(bip=bip_antecessor, nid=nid_antecessor)
@@ -148,22 +154,24 @@ class Join(Message):
         print "UPDATE enviado: sucessor de %s é %s " % (self.node.antecessor.nid, self.node.nid)
 
 class Update(Message):
-    CODIGO = chr(3)
-    CODIGO_RESPOSTA = chr(67)
+    CODIGO = int(3)
+    CODIGO_RESPOSTA = int(67)
 
     def envia(self,novo_sucessor, ip_destino):
-        self.message = novo_sucessor.nid + novo_sucessor.getBytesIP()
+        self.message = ['II', novo_sucessor.nid, novo_sucessor.getBytesIP()]
         Message.envia(self,ip_destino)
 
-    def responde(self,remetente,data):
-        novo_sucessor = Nodo(nid=data[1:5],bip=data[5:9])
+    def responde(self,remetente,dados):
+        data = struct.unpack('!BII',dados) 
+        novo_sucessor = Nodo(nid=data[1],bip=data[2])
         self.node.sucessor = novo_sucessor
         print "UPDATE respondido: %s é novo sucessor de %s!" % (novo_sucessor.nid, self.node.nid)
-        self.message = self.node.nid
+        self.message = ['I',self.node.nid]
         self.envia_resposta(remetente)
 
-    def recebe_resposta(self,data):
-        nid_origem=data[1:5]
+    def recebe_resposta(self,dados):
+        data = struct.unpack('!BI',dados)
+        nid_origem=data[1]
         print "resposta de UPDATE recebida:\n --- %s atualizou seu sucessor" % nid_origem
         
 
