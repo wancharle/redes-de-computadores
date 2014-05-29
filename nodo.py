@@ -22,7 +22,7 @@ class Nodo:
             self.nid = int(str(int(hashlib.md5(self.ip).hexdigest(),16))[:4]) 
             self.ip = nip
         else:
-            self.nid = nid
+            self.nid = int(nid)
         self.esta_na_rede = False
         self.antecessor = None
         self.sucessor = None

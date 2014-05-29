@@ -37,7 +37,7 @@ class Lookup(Message):
 
     def envia(self,node_origem, nid_procurado, ip_destino):
         
-        self.message =["III", node_origem.nid , node_origem.getBytesIP() , nid_procurado ]
+        self.message =["III", int(node_origem.nid) , node_origem.getBytesIP() , int(nid_procurado) ]
         Message.envia(self, ip_destino)       
     
     def responde(self, remetente, dados):
