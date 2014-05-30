@@ -1,15 +1,18 @@
 #! -*- coding: utf-8 -*-
 
+from utils import ip2int, int2ip
 import socket, struct, binascii
 from nodo import Nodo
 class Message:
     CODIGO = 'M'
     UDP_PORT = 12345
+    sock = None
     
+    UDP_PORT_RESPOSTA = None
+
     def __init__(self,node, message=None):
         self.node = node
         self.message = ['s',message]
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP  
        
     def envia(self,UDP_IP):  
         data = struct.pack("!B"+self.message[0],int(self.CODIGO), *self.message[1:])
@@ -19,7 +22,7 @@ class Message:
     def envia_resposta(self,UDP_IP):
         data = struct.pack("!B"+self.message[0],int(self.CODIGO_RESPOSTA), *self.message[1:])
         print "resposta enviada (%s): ||%s||" % (UDP_IP, binascii.hexlify(data))       
-        self.sock.sendto(data, (UDP_IP, self.UDP_PORT)) 
+        self.sock.sendto(data, (UDP_IP, self.UDP_PORT_RESPOSTA)) 
 
     def recebe(self,datagram):
         pass
@@ -158,16 +161,16 @@ class Update(Message):
     CODIGO_RESPOSTA = int(67)
 
     def envia(self,novo_sucessor, ip_destino):
-        self.message = ['II', novo_sucessor.nid, novo_sucessor.getBytesIP()]
+        self.message = ['III',self.node.nid, novo_sucessor.nid, novo_sucessor.getBytesIP()]
         Message.envia(self,ip_destino)
 
     def responde(self,remetente,dados):
-        data = struct.unpack('!BII',dados) 
-        novo_sucessor = Nodo(nid=data[1],bip=data[2])
+        data = struct.unpack('!BIII',dados) 
+        novo_sucessor = Nodo(nid=data[2],bip=data[3])
         self.node.sucessor = novo_sucessor
         print "UPDATE respondido: %s é novo sucessor de %s!" % (novo_sucessor.nid, self.node.nid)
         self.message = ['I',self.node.nid]
-        self.envia_resposta(remetente)
+        self.envia_resposta(int2ip(data[3]))
 
     def recebe_resposta(self,dados):
         data = struct.unpack('!BI',dados)

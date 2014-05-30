@@ -3,27 +3,44 @@ import os
 import socket
 from threading import Thread
 import time,struct
-
+import binascii
 from nodo import Nodo
 from utils import pega_todos_os_ips
-from messages import Texto, Leave, Lookup, Update, Join
+from messages import Texto, Leave, Lookup, Update, Join, Message
 
 
 global nodo
+
+def atualiza_porta(porta_resposta):
+    Message.UDP_PORT_RESPOSTA = porta_resposta
+    Lookup.UDP_PORT_RESPOSTA = porta_resposta
+    Join.UDP_PORT_RESPOSTA = porta_resposta
+    Update.UDP_PORT_RESPOSTA = porta_resposta
+    Leave.UDP_PORT_RESPOSTA = porta_resposta
+
 
 class Server:
     PORTA = 12345
 
     def __init__(self):
         global nodo      
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP  
+        Message.sock = sock
+        Leave.sock = sock
+        Lookup.sock = sock
+        Join.sock = sock
+        Update.sock = sock
+
+        s = sock 
         s.bind(("", self.PORTA))
         print "esperando mensagens na porta :", self.PORTA
         data = ""
         while 1 :
             data, addr = s.recvfrom(1024)
-            print  "\nSERVER '%s' RECEBEU:  ||%s||" % (nodo.nid,data)
+            atualiza_porta(addr[1]) 
+            print  "\nSERVER '%s' RECEBEU:  ||%s||" % (nodo.nid,binascii.hexlify(data))
             ip_remetente = addr[0]
+            print "SERVER vai resposder em: %s\n" % (addr[1])
             codigo = struct.unpack("!B",data[0])[0]
             if codigo ==Texto.CODIGO:
                 texto =  Texto.recebe(data)
