@@ -102,15 +102,17 @@ class Console:
             elif comando.startswith('leave'):
                 l = Leave(nodo)
                 l.envia()
+            elif comando.startswith('join'):
+                ip_join = raw_input('Informe o IP de entrada do join: ').strip()
+                j = Join(nodo)
+                j.envia(ip_join)
+
             elif comando.startswith('lookup'):
+                ip =  raw_input('Informe IP de algun nó da rede: ').strip()
+                nid_procurado = raw_input('Informe identificador do no procurado: ').strip()
+
                 l = Lookup(nodo)
-                if len(parametros)==4:
-                    nodo_origem = Nodo(nid=parametros[0],nip=parametros[1])
-                    l.envia(nodo_origem,parametros[2],parametros[3])
-                elif len(parametros)==2:
-                    l.envia(nodo,parametros[0],parametros[1])
-                else:
-                    print "Error: numero incorreto de parametros\n Exemplos validos:\n  >>> lookup id_procurado ip_destino\n  >>> lookup id_origem ip_origem id_procurado ip_destino" 
+                l.envia(nodo,nid_procurado,ip)
             elif comando.startswith('netinfo'):
                 nodo.identifica_rede()
             elif comando.startswith('quit'):
