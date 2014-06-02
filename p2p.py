@@ -41,6 +41,10 @@ class Server:
             print  "\nSERVER '%s' RECEBEU:  ||%s||" % (nodo.nid,binascii.hexlify(data))
             ip_remetente = addr[0]
             print "SERVER vai resposder em: %s\n" % (addr[1])
+            if len(data)==0:
+                print "\nERROR:: mensagem não tratada foi recebida: ||%s||" % data
+                continue
+
             codigo = struct.unpack("!B",data[0])[0]
             if codigo ==Texto.CODIGO:
                 texto =  Texto.recebe(data)
@@ -58,8 +62,11 @@ class Server:
 
             # trata LOOKUP
             elif codigo == Lookup.CODIGO:
-                lookup = Lookup(nodo)
-                lookup.responde(ip_remetente, data) 
+                if nodo.esta_na_rede:
+                    lookup = Lookup(nodo)
+                    lookup.responde(ip_remetente, data) 
+                else:
+                    print "\n AVISO: Este nó não esta na rede, por isso não pode responder lookups!"
             elif codigo == Lookup.CODIGO_RESPOSTA:
                 lookup = Lookup(nodo)
                 lookup.recebe_resposta(data)

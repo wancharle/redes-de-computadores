@@ -81,10 +81,12 @@ class Nodo:
     def identifica_rede(self):
     
         from messages import Lookup
-        
-        self.identificando_estrutura_da_rede = True
-        lookup = Lookup(self)
-        lookup.envia(self, self.sucessor.nid, self.sucessor.ip)
+        if self.esta_na_rede:      
+            self.identificando_estrutura_da_rede = True
+            lookup = Lookup(self)
+            lookup.envia(self, self.sucessor.nid, self.sucessor.ip)
+        else:
+            print "ERROR: o nó ainda nao pertence a uma rede"
 
     def recebe_lookup(self,nid_procurado, sucessor):
         if self.identificando_estrutura_da_rede:
