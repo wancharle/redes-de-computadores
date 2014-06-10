@@ -21,6 +21,7 @@ def atualiza_porta(porta_resposta):
 
 class Server:
     PORTA = 12345
+    USAR_PORTA_DA_FONTE = False
 
     def __init__(self):
         global nodo      
@@ -37,10 +38,14 @@ class Server:
         data = ""
         while 1 :
             data, addr = s.recvfrom(1024)
-            atualiza_porta(addr[1]) 
+            if self.USAR_PORTA_DA_FONTE:
+                atualiza_porta(addr[1]) # usa porta da fonte  
+                print "SERVER vai responder na mesma porta da fonte: %s\n" % (addr[1])
+            else:
+                atualiza_porta(12345)  
+
             print  "\nSERVER '%s' RECEBEU:  ||%s||" % (nodo.nid,binascii.hexlify(data))
             ip_remetente = addr[0]
-            print "SERVER vai resposder em: %s\n" % (addr[1])
             if len(data)==0:
                 print "\nERROR:: mensagem não tratada foi recebida: ||%s||" % data
                 continue
@@ -133,9 +138,12 @@ class Console:
                     print "Error: comando \"%s\" nao existe" % comando.split(' ')[0]
                 
         os._exit(0)
+
+
 # main
 if __name__== "__main__":
     # criando rede
+
     ips = pega_todos_os_ips()
     if len(ips)>1:
         ip = None
