@@ -15,12 +15,12 @@ class Message:
         self.message = ['s',message]
        
     def envia(self,UDP_IP):  
-        data = struct.pack("!B"+self.message[0],int(self.CODIGO), *self.message[1:])
+        data = struct.pack(">B"+self.message[0],int(self.CODIGO), *self.message[1:])
         print "mensagem enviada (%s): ||%s||" % (UDP_IP, binascii.hexlify(data))        
         self.sock.sendto(data, (UDP_IP, self.UDP_PORT)) 
 
     def envia_resposta(self,UDP_IP):
-        data = struct.pack("!B"+self.message[0],int(self.CODIGO_RESPOSTA), *self.message[1:])
+        data = struct.pack(">B"+self.message[0],int(self.CODIGO_RESPOSTA), *self.message[1:])
         print "resposta enviada (%s): ||%s||" % (UDP_IP, binascii.hexlify(data))       
         self.sock.sendto(data, (UDP_IP, self.UDP_PORT_RESPOSTA)) 
 
@@ -44,7 +44,7 @@ class Lookup(Message):
         Message.envia(self, ip_destino)       
     
     def responde(self, remetente, dados):
-        data = struct.unpack('!BIII',dados[:13])
+        data = struct.unpack('>BIII',dados[:13])
         nid_origem = data[1]
         bip_origem = data[2]
         nid_procurado = data[3]
@@ -95,7 +95,7 @@ class Lookup(Message):
         return
     
     def recebe_resposta(self,dados):
-        data = struct.unpack("!BIII",dados[:13])
+        data = struct.unpack(">BIII",dados[:13])
         nid_procurado = data[1]
         nid_sucessor = data[2]
         bip_sucessor = data[3]
@@ -123,7 +123,7 @@ class Join(Message):
 
     def responde(self, remetente, data):
         ip_antecessor = remetente
-        cod, nid_antecessor = struct.unpack('!BI',data[:5])
+        cod, nid_antecessor = struct.unpack('>BI',data[:5])
         
         # atualizando antecessor do nó sucessor
         novo_antecessor = self.node.antecessor        
@@ -138,7 +138,7 @@ class Join(Message):
         print "JOIN respondido:\n --- %s foi adicionado a rede como antecessor de %s!" % (nid_antecessor, self.node.nid) 
 
     def recebe_resposta(self,dados):
-        data = struct.unpack('!BIIII',dados[:17])
+        data = struct.unpack('>BIIII',dados[:17])
         nid_sucessor = data[1]
         bip_sucessor = data[2]
         nid_antecessor = data[3]
@@ -165,7 +165,7 @@ class Update(Message):
         Message.envia(self,ip_destino)
 
     def responde(self,remetente,dados):
-        data = struct.unpack('!BIII',dados[:13]) 
+        data = struct.unpack('>BIII',dados[:13]) 
         novo_sucessor = Nodo(nid=data[2],bip=data[3])
         self.node.sucessor = novo_sucessor
         print "UPDATE respondido: %s é novo sucessor de %s!" % (novo_sucessor.nid, self.node.nid)
@@ -173,7 +173,7 @@ class Update(Message):
         self.envia_resposta(int2ip(data[3]))
 
     def recebe_resposta(self,dados):
-        data = struct.unpack('!BI',dados[:5])
+        data = struct.unpack('>BI',dados[:5])
         nid_origem=data[1]
         print "resposta de UPDATE recebida:\n --- %s atualizou seu sucessor" % nid_origem
         
@@ -208,7 +208,7 @@ class Leave(Message):
 
     def responde(self, remetente, data):
         # desempacota os dados
-        dados = struct.unpack("!BIIIII",data[:21])
+        dados = struct.unpack(">BIIIII",data[:21])
         nid_saindo = dados[1] 
         nid_sucessor = dados[2]
         bip_sucessor = dados[3]
@@ -231,7 +231,7 @@ class Leave(Message):
         """
         recebe resposta dos visinhos que terminaram o balanceameno
         """
-        codigo, nid = struct.unpack('!BI',data[:5])
+        codigo, nid = struct.unpack('>BI',data[:5])
         print "\n'%s' recebeu resposta LEAVE de '%s'" %(self.node.nid,nid)  
         Leave.LEAVES.remove(nid)        
         return len(Leave.LEAVES)==0 

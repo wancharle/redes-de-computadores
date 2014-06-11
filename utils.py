@@ -9,7 +9,7 @@ def ip2int( addr):
             >>> ip2int('192.168.1.1')
             3232235777
         """
-        return struct.unpack("!I", socket.inet_aton(addr))[0]
+        return struct.unpack(">I", socket.inet_aton(addr))[0]
 
 def int2ip( addr):
         """
@@ -17,8 +17,7 @@ def int2ip( addr):
             >>> int2ip(3232235777)
             '192.168.1.1'
         """
-        print addr
-        return socket.inet_ntoa(struct.pack("!I", addr))
+        return socket.inet_ntoa(struct.pack(">I", addr))
  
 def pega_todos_os_ips():
     interfaces = netifaces.interfaces()
