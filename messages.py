@@ -198,12 +198,17 @@ class Leave(Message):
 
         # salva nids para esperar resposta
         self.LEAVES.append(node.sucessor.nid)
-        self.LEAVES.append(node.antecessor.nid)
+
+        if (self.node.sucessor.ip != self.node.antecessor.ip): # se for igual não precisa enviar leae
+            self.LEAVES.append(node.antecessor.nid)
 
         # envia mensagem de leave
 
         print "\n---> '%s' enviou leave!" % node.nid
         Message.envia(self, self.node.sucessor.ip) 
+
+        if (self.node.sucessor.ip != self.node.antecessor.ip): # se for igual não precisa enviar leae
+            self.LEAVES.append(node.antecessor.nid)
         Message.envia(self, self.node.antecessor.ip)
 
     def responde(self, remetente, data):
