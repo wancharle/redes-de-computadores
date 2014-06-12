@@ -208,8 +208,7 @@ class Leave(Message):
         Message.envia(self, self.node.sucessor.ip) 
 
         if (self.node.sucessor.ip != self.node.antecessor.ip): # se for igual não precisa enviar leae
-            self.LEAVES.append(node.antecessor.nid)
-        Message.envia(self, self.node.antecessor.ip)
+            Message.envia(self, self.node.antecessor.ip)
 
     def responde(self, remetente, data):
         # desempacota os dados
