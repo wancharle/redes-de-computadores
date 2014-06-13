@@ -14,7 +14,7 @@ python p2p.py
 
 ### Dependências
 
-A aplicação deste trabalho é multiplataforma e roda tanto em linux. Windows e Mac OS X. Porém. possui dependência da biblioteca netifaces do python.  Para instalá-la basta executar o seguinte comando no Ubuntu Linux:
+A aplicação deste trabalho é multiplataforma e roda tanto em linux, Windows e Mac OS X. Porém. possui dependência da biblioteca netifaces do python.  Para instalá-la basta executar o seguinte comando no Ubuntu Linux:
 
 ```bash
 sudo  apt-get install python-netifaces
@@ -50,5 +50,6 @@ Ao digitar este comando no prompt de comando a aplicação é encerrada.
 
 ### Testes
 
+<iframe src="http://www.screenr.com/embed/1ZAN" width="650" height="396" frameborder="0"></iframe>
 
 
