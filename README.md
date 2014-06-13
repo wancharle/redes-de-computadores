@@ -50,4 +50,4 @@ Ao digitar este comando no prompt de comando a aplicação é encerrada.
 
 ### Testes
 
-Os testes realizados podem ser vistos nesse [video](http://www.screenr.com/embed/1ZAN).
+Os testes realizados podem ser vistos nesse [video](http://www.screenr.com/MZAN).
