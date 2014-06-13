@@ -50,6 +50,5 @@ Ao digitar este comando no prompt de comando a aplicação é encerrada.
 
 ### Testes
 
-<iframe src="http://www.screenr.com/embed/1ZAN" width="650" height="396" frameborder="0"></iframe>
-
-
+Os testes realizados podem ser vistos nos videos abaixo:
+[Teste](http://www.screenr.com/embed/1ZAN)
