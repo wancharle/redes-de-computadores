@@ -182,6 +182,7 @@ class Leave(Message):
     CODIGO = int(1) # leave codigo = 1
     CODIGO_RESPOSTA = int(65)
 
+    USE_DUAS_MENSAGENS_SEMPRE = False
     LEAVES = []
 
     def envia(self): 
@@ -199,7 +200,7 @@ class Leave(Message):
         # salva nids para esperar resposta
         self.LEAVES.append(node.sucessor.nid)
 
-        if (self.node.sucessor.ip != self.node.antecessor.ip): # se for igual não precisa enviar leae
+        if (self.node.sucessor.ip != self.node.antecessor.ip) or (self.USE_DUAS_MENSAGENS_SEMPRE): # se for igual não precisa enviar leave
             self.LEAVES.append(node.antecessor.nid)
 
         # envia mensagem de leave
@@ -207,7 +208,7 @@ class Leave(Message):
         print "\n---> '%s' enviou leave!" % node.nid
         Message.envia(self, self.node.sucessor.ip) 
 
-        if (self.node.sucessor.ip != self.node.antecessor.ip): # se for igual não precisa enviar leae
+        if (self.node.sucessor.ip != self.node.antecessor.ip) or (self.USE_DUAS_MENSAGENS_SEMPRE): # se for igual não precisa enviar leave
             Message.envia(self, self.node.antecessor.ip)
 
     def responde(self, remetente, data):

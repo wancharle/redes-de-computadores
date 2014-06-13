@@ -140,6 +140,15 @@ class Console:
         os._exit(0)
 
 
+def informeOpcao(opcoes):
+    r = None
+    while  not r:
+        r = raw_input("\nInforme o numero da opção desejada: ").strip()
+        if r not in opcoes:
+            r = None
+            print "ERROR: opção invalida!"
+    return r
+
 # main
 if __name__== "__main__":
     # criando rede
@@ -147,17 +156,38 @@ if __name__== "__main__":
     ips = pega_todos_os_ips()
     if len(ips)>1:
         ip = None
+
+        print "\n----------------------------------------------------"
         while (not ip):
-            print "Este computador possuem mais de uma interface de rede:"
+            print "Este computador possui mais de uma interface de rede:"
             for i,d in enumerate(ips):
                 print "%d - %s (%s)" % (i+1,d[1],d[0]) 
-            opcao = raw_input('informe aquela que deseja utilizar:')
+            opcao = raw_input('Informe o numero da opção desejada: ')
             try:
                 ip = ips[int(opcao) -1][1]
             except:
                 print "ERROR: opção inválida!!!\n"
     else:
         ip = ips[0][1]
+
+    # escolhe estilo do protocolo
+    print "\n----------------------------------------------------"
+    print 'Numa rede com 2 elementos, se um no da leave o protocolo de envio tem duas opções.\n 1- Uma mensagem de leave. Pois sucessor = antecessor\n 2- Continua mandando duas mensagens de leave como já faz nos outros casos.'
+    r = informeOpcao(['1','2'])
+    if r == "2":
+        Leave.USE_DUAS_MENSAGENS_SEMPRE = True
+    elif r == "1":
+        Leave.USE_DUAS_MENSAGENS_SEMPRE = False
+
+    # escolhe tratamento das portas
+    print "\n----------------------------------------------------"
+    print "Ao responder uma mensagem o protocolo de envio tem duas opções:\n 1- Responder na porta de origem da mensagem\n 2- Responder na porta 12345"
+    r = informeOpcao(['1','2'])
+    if r == "1":
+        Server.USAR_PORTA_DA_FONTE = True
+    elif r == "2":
+        Server.USAR_PORTA_DA_FONTE = False
+
     # iniciando rede
     nodo = Nodo(ip) 
 
