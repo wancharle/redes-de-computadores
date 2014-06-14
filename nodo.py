@@ -66,6 +66,7 @@ class Nodo:
 
     def exibe_rede(self):
         #inicio
+        self.identificando_estrutura_da_rede = False
         nos = self.nodes_conhecidos.keys()
         nos.sort()
         # primeiro é o sucessor do ultimo

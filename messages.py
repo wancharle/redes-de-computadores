@@ -84,7 +84,7 @@ class Lookup(Message):
                 else:
                     # se nao pergunte para ele quem é o novo sucessor
                     self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
-                    print "LOOKUP FORWARD enviado para sucessor de %s (%s)" % (self.node.nid,self.node.ip)
+                    print "LOOKUP FORWARD enviado para sucessor de %s (%s) procurando por %s" % (self.node.nid,self.node.ip, nid_procurado)
                     return # finaliza pois ja tratou
 
         
