@@ -51,41 +51,41 @@ class Lookup(Message):
         
         node_origem = Nodo(bip=bip_origem, nid=nid_origem) 
  
-        # 1 - se o nid existe
+        # 1 - se o nid ja esta na rede
         if nid_procurado == self.node.nid:
              sucessor = self.node.sucessor
-        # 2 - se o nid não existe
-        elif nid_procurado < self.node.nid:
-            # 2.1 - procura nid proximo caminhando para o inicio
-            if self.node.nid <= self.node.antecessor.nid:
-                # se esta no inicio do circulo ou só tem 1 no na rede 
-                # entao o novo sucessor é no atual, ou seja, o primeiro
-                sucessor = self.node
-            else:
-                if nid_procurado > self.node.antecessor.nid:
-                    # se antecessor nao pode ser sucessor o novo sucessor eh o nó atual
-                    sucessor = self.node
-                else:
-                    # se nao pergunte para ele quem é o novo sucessor
-                    self.envia(node_origem, nid_procurado, self.node.antecessor.ip)
-                    print "LOOKUP BACKWARD enviado para antecessor de %s (%s)" % (self.node.nid,self.node.ip)
-                    return # finaliza pois ja tratou
-
-        elif nid_procurado > self.node.nid:
-            # 2.2 - procura nid proximo caminhando para o fim
-            if self.node.nid >= self.node.sucessor.nid:
-                # se esta no fim do circulo ou so tem 1 no na rede  
-                # entao o sucessor é o sucessor do no atual
+        # 2 - se o nid ainda não faz parte da rede
+        elif self.node.nid >= self.node.sucessor.nid:
+            # 2.1 - verifica se esta no fim do circulo(ou sozinho)
+            if nid_procurado > self.node.nid:
+                # se esta no fim do circulo e pode ser sucessor entao entra como ultimo 
+                # entao o novo sucessor é o sucessor do nó atual(que é o ultimo no entao o sucessor eh primeiro da fila)
                 sucessor = self.node.sucessor
             else:
-                if nid_procurado > self.node.sucessor.nid:
-                    # se o sucessor nao pode ser sucessor o novo sucessor eh o no atual
-                    sucessor = self.node
-                else:
-                    # se nao pergunte para ele quem é o novo sucessor
-                    self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
-                    print "LOOKUP FORWARD enviado para sucessor de %s (%s) procurando por %s" % (self.node.nid,self.node.ip, nid_procurado)
-                    return # finaliza pois ja tratou
+                # se nao pode ser sucessor mas está no fim da file encaminha para frente
+                self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
+                print "LOOKUP FORWARD enviado para sucessor de %s (%s)" % (self.node.nid,self.node.ip)
+                return # finaliza pois ja tratou
+
+        elif nid_procurado > self.node.nid:
+            # 2.2 - se não esta no fim da fila E pode ser sucessor
+            if nid_procurado > self.node.sucessor.nid:
+                # verifica se é sucessor do sucessor
+                self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
+                print "LOOKUP FORWARD enviado para sucessor de %s (%s)" % (self.node.nid,self.node.ip)
+                return # finaliza pois ja tratou
+            else:
+                # se pode ser sucessor mas não pode ser sucessor do sucessor
+                sucessor = self.node.sucessor
+
+        elif nid_procurado > self.node.antecessor.nid:
+            # 2.3 - se não esta no fim da fila E pode ser antecessor
+            sucessor = self.node
+        else:
+           # nao esta no fim da fila e nao pode ser antecessor
+           self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
+           print "LOOKUP FORWARD enviado para sucessor de %s (%s) procurando por %s" % (self.node.nid,self.node.ip, nid_procurado)
+           return # finaliza pois ja tratou
 
         
         # responde para node_origem apenas
