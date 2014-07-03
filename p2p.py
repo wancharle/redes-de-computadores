@@ -11,17 +11,8 @@ from messages import Texto, Leave, Lookup, Update, Join, Message
 
 global nodo
 
-def atualiza_porta(porta_resposta):
-    Message.UDP_PORT_RESPOSTA = porta_resposta
-    Lookup.UDP_PORT_RESPOSTA = porta_resposta
-    Join.UDP_PORT_RESPOSTA = porta_resposta
-    Update.UDP_PORT_RESPOSTA = porta_resposta
-    Leave.UDP_PORT_RESPOSTA = porta_resposta
-
-
 class Server:
     PORTA = 12345
-    USAR_PORTA_DA_FONTE = False
 
     def __init__(self):
         global nodo      
@@ -38,12 +29,6 @@ class Server:
         data = ""
         while 1 :
             data, addr = s.recvfrom(1024)
-            if self.USAR_PORTA_DA_FONTE:
-                atualiza_porta(addr[1]) # usa porta da fonte  
-                print "SERVER vai responder na mesma porta da fonte: %s\n" % (addr[1])
-            else:
-                atualiza_porta(12345)  
-
             print  "\nSERVER '%s' RECEBEU:  ||%s||" % (nodo.nid,binascii.hexlify(data))
             ip_remetente = addr[0]
             if len(data)==0:
@@ -169,24 +154,6 @@ if __name__== "__main__":
                 print "ERROR: opção inválida!!!\n"
     else:
         ip = ips[0][1]
-
-    # escolhe estilo do protocolo
-    print "\n----------------------------------------------------"
-    print 'Numa rede com 2 elementos, se um no da leave o protocolo de envio tem duas opções.\n 1- Uma mensagem de leave. Pois sucessor = antecessor\n 2- Continua mandando duas mensagens de leave como já faz nos outros casos.'
-    r = informeOpcao(['1','2'])
-    if r == "2":
-        Leave.USE_DUAS_MENSAGENS_SEMPRE = True
-    elif r == "1":
-        Leave.USE_DUAS_MENSAGENS_SEMPRE = False
-
-    # escolhe tratamento das portas
-    print "\n----------------------------------------------------"
-    print "Ao responder uma mensagem o protocolo de envio tem duas opções:\n 1- Responder na porta de origem da mensagem\n 2- Responder na porta 12345"
-    r = informeOpcao(['1','2'])
-    if r == "1":
-        Server.USAR_PORTA_DA_FONTE = True
-    elif r == "2":
-        Server.USAR_PORTA_DA_FONTE = False
 
     # iniciando rede
     nodo = Nodo(ip) 
