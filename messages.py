@@ -83,9 +83,13 @@ class Lookup(Message):
             sucessor = self.node
         else:
            # nao esta no fim da fila e nao pode ser antecessor
-           self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
-           print "LOOKUP FORWARD enviado para sucessor de %s (%s) procurando por %s" % (self.node.nid,self.node.ip, nid_procurado)
-           return # finaliza pois ja tratou
+           if self.node.nid < self.node.antecessor.nid:
+                # esta no inicio da fila
+                sucessor = self.node    
+           else:
+                self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
+                print "LOOKUP FORWARD enviado para sucessor de %s (%s) procurando por %s" % (self.node.nid,self.node.ip, nid_procurado)
+                return # finaliza pois ja tratou
 
         
         # responde para node_origem apenas
