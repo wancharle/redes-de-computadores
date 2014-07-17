@@ -54,8 +54,10 @@ class Lookup(Message):
         # 1 - se o nid ja esta na rede
         if nid_procurado == self.node.nid:
              sucessor = self.node.sucessor
+        elif self.node.nid == self.node.antecessor.nid: # primeio no
+             sucessor = self.node.sucessor
         # 2 - se o nid ainda não faz parte da rede
-        elif self.node.nid >= self.node.sucessor.nid:
+        elif self.node.nid > self.node.sucessor.nid:
             # 2.1 - verifica se esta no fim do circulo(ou sozinho)
             if nid_procurado > self.node.nid:
                 # se esta no fim do circulo e pode ser sucessor entao entra como ultimo 
@@ -85,6 +87,7 @@ class Lookup(Message):
            # nao esta no fim da fila e nao pode ser antecessor
            if self.node.nid < self.node.antecessor.nid:
                 # esta no inicio da fila
+
                 sucessor = self.node    
            else:
                 self.envia(node_origem, nid_procurado, self.node.sucessor.ip)
